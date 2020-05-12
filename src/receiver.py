@@ -48,15 +48,14 @@ class RfDevice:
             time.sleep(0.01)
             if self.rf_device.rx_code_timestamp != timestamp:
                 timestamp = self.rf_device.rx_code_timestamp
+                logging.info("Unknown code:" + str(self.rx_code) +
+                             " [pulselength " + str(self.rf_device.rx_pulselength) +
+                             ", protocol " + str(self.rf_device.rx_proto) + "]")
 
-                if self.rx_code == com.PUMP_IS_ACTIVE:
+                if self.rx_code > com.PUMP_IS_INACTIVE:
                     self.turn_light_on()
-                elif self.rx_code == com.PUMP_IS_INACTIVE:
-                    self.turn_light_off()
                 else:
-                    logging.info("Unknown code:" + str(self.rx_code) +
-                                 " [pulselength " + str(self.rf_device.rx_pulselength) +
-                                 ", protocol " + str(self.rf_device.rx_proto) + "]")
+                    self.turn_light_off()
 
     def turn_light_on(self):
         logging.info('Pump is running')
