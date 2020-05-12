@@ -1,15 +1,10 @@
 #!/usr/bin/env python3
-
-import logging
+from contextlib import suppress
 
 import RPi.GPIO as GPIO
 from rpi_rf import RFDevice
 
 import com
-
-GPIO.setmode(GPIO.BCM)
-logging.basicConfig(level=logging.INFO, datefmt='%Y-%m-%d %H:%M:%S',
-                    format='%(asctime)-15s - [%(levelname)s] %(module)s: %(message)s',)
 
 
 class RfDevice:
@@ -32,8 +27,6 @@ class RfDevice:
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.rfdevice.cleanup()
-        GPIO.setmode(GPIO.BCM)
-        GPIO.cleanup(self.power_in_gpio)
 
     def listen(self):
         while True:
@@ -51,5 +44,10 @@ class RfDevice:
 
 
 if __name__ == '__main__':
-    with RfDevice() as rf_device:
-        rf_device.listen()
+    com.prepare()
+    with suppress(KeyboardInterrupt):
+        with RfDevice() as rf_device:
+            rf_device.listen()
+            GPIO.setmode(GPIO.BCM)
+            GPIO.cleanup(rf_device.power_in_gpio)
+    print('Receiver finished')

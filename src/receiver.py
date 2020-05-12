@@ -4,15 +4,12 @@ import signal
 import sys
 import time
 import logging
+from contextlib import suppress
 
 from rpi_rf import RFDevice
 import RPi.GPIO as GPIO
 
 import com
-
-GPIO.setmode(GPIO.BCM)
-logging.basicConfig(level=logging.INFO, datefmt='%Y-%m-%d %H:%M:%S',
-                    format='%(asctime)-15s - [%(levelname)s] %(module)s: %(message)s', )
 
 
 class RfDevice:
@@ -31,8 +28,6 @@ class RfDevice:
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.rf_device.cleanup()
-        GPIO.setmode(GPIO.BCM)
-        GPIO.cleanup(self.light_gpio)
 
     def exit_handler(self, _signal, _frame):
         self.rf_device.cleanup()
@@ -49,15 +44,14 @@ class RfDevice:
             time.sleep(0.01)
             if self.rf_device.rx_code_timestamp != timestamp:
                 timestamp = self.rf_device.rx_code_timestamp
+                logging.info("Unknown code:" + str(self.rx_code) +
+                             " [pulselength " + str(self.rf_device.rx_pulselength) +
+                             ", protocol " + str(self.rf_device.rx_proto) + "]")
 
-                if self.rx_code == com.PUMP_IS_ACTIVE:
+                if self.rx_code > com.PUMP_IS_INACTIVE:
                     self.turn_light_on()
-                elif self.rx_code == com.PUMP_IS_INACTIVE:
-                    self.turn_light_off()
                 else:
-                    logging.info("Unknown code:" + str(self.rx_code) +
-                                 " [pulselength " + str(self.rf_device.rx_pulselength) +
-                                 ", protocol " + str(self.rf_device.rx_proto) + "]")
+                    self.turn_light_off()
 
     def turn_light_on(self):
         logging.info('Pump is running')
@@ -69,5 +63,10 @@ class RfDevice:
 
 
 if __name__ == '__main__':
-    with RfDevice() as rf_device:
-        rf_device.listen()
+    com.prepare()
+    with suppress(KeyboardInterrupt):
+        with RfDevice() as rf_device:
+            rf_device.listen()
+            GPIO.setmode(GPIO.BCM)
+            GPIO.cleanup(rf_device.light_gpio)
+    print('Receiver finished')
