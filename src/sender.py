@@ -32,6 +32,7 @@ class RfDevice:
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.rfdevice.cleanup()
+        GPIO.setmode(GPIO.BCM)
         GPIO.cleanup(self.power_in_gpio)
 
     def listen(self):

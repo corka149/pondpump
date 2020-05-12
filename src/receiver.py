@@ -31,6 +31,7 @@ class RfDevice:
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.rf_device.cleanup()
+        GPIO.setmode(GPIO.BCM)
         GPIO.cleanup(self.light_gpio)
 
     def exit_handler(self, _signal, _frame):
