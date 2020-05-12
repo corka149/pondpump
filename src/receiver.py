@@ -67,6 +67,6 @@ if __name__ == '__main__':
     with suppress(KeyboardInterrupt):
         with RfDevice() as rf_device:
             rf_device.listen()
-            GPIO.setmode(GPIO.BCM)
-            GPIO.cleanup(rf_device.light_gpio)
+    GPIO.setmode(GPIO.BCM)
+    GPIO.cleanup(rf_device.light_gpio)
     print('Receiver finished')
