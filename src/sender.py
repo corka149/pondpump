@@ -17,15 +17,16 @@ class RfDevice:
     def __init__(self):
         self.power_in_gpio = 13
         self.sending_gpio = 17
-        self.protocol = "default"
-        self.pulselength = "default"
-        self.length = "default"
+        self.protocol = None
+        self.pulselength = None
+        self.length = None
         self.rfdevice = None
+        self.tx_repeat = 10
 
     def __enter__(self):
         self.rfdevice = RFDevice(self.sending_gpio)
         self.rfdevice.enable_tx()
-        self.rfdevice.tx_repeat = 5
+        self.rfdevice.tx_repeat = self.tx_repeat
         GPIO.setup(self.power_in_gpio, GPIO.IN, pull_up_down=GPIO.PUD_UP)
         return self
 
