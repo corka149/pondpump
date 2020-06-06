@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import logging
+import os
 from contextlib import suppress
 
 import RPi.GPIO as GPIO
@@ -10,9 +11,9 @@ import com
 
 class PowerListener:
 
-    def __init__(self):
+    def __init__(self, host_address):
         self.power_in_gpio = 13
-        self.listener_endpoint = 'http://:4000/v1/device/pond_pump_149'
+        self.listener_endpoint = f'http://{host_address}/v1/device/pond_pump_149'
 
     def listen(self):
         while True:
@@ -38,7 +39,9 @@ class PowerListener:
 if __name__ == '__main__':
     com.prepare()
     with suppress(KeyboardInterrupt):
-        power_listener = PowerListener()
+        host = os.getenv('HOST', 'localhost:4000')
+        print(f'Send messages to: "{host}"')
+        power_listener = PowerListener(host)
         power_listener.listen()
     GPIO.setmode(GPIO.BCM)
     GPIO.cleanup(power_listener.power_in_gpio)
