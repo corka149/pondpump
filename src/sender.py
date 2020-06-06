@@ -16,6 +16,7 @@ class PowerListener:
         self.listener_endpoint = f'http://{host_address}/v1/device/pond_pump_149'
 
     def listen(self):
+        GPIO.setup(self.power_in_gpio, GPIO.IN, pull_up_down=GPIO.PUD_UP)
         while True:
             # wait for up to 5 seconds for a rising edge (timeout is in milliseconds)
             if GPIO.wait_for_edge(self.power_in_gpio, GPIO.RISING, timeout=5000) is None:
