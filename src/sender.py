@@ -3,31 +3,16 @@ import logging
 from contextlib import suppress
 
 import RPi.GPIO as GPIO
-from rpi_rf import RFDevice
+import requests
 
 import com
 
 
-class RfDevice:
+class PowerListener:
 
     def __init__(self):
         self.power_in_gpio = 13
-        self.sending_gpio = 17
-        self.protocol = None
-        self.pulselength = None
-        self.length = None
-        self.rfdevice = None
-        self.tx_repeat = 10
-
-    def __enter__(self):
-        self.rfdevice = RFDevice(self.sending_gpio)
-        self.rfdevice.enable_tx()
-        self.rfdevice.tx_repeat = self.tx_repeat
-        GPIO.setup(self.power_in_gpio, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-        return self
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        self.rfdevice.cleanup()
+        self.listener_endpoint = 'http://:4000/v1/device/pond_pump_149'
 
     def listen(self):
         while True:
@@ -40,17 +25,21 @@ class RfDevice:
                 self.send_is_active()
 
     def send_is_active(self):
-        self.rfdevice.tx_code(com.PUMP_IS_ACTIVE, self.protocol, self.pulselength, self.length)
+        requests.get(
+            self.listener_endpoint + '/active'
+        )
 
     def send_is_inactive(self):
-        self.rfdevice.tx_code(com.PUMP_IS_INACTIVE, self.protocol, self.pulselength, self.length)
+        requests.get(
+            self.listener_endpoint + '/inactive'
+        )
 
 
 if __name__ == '__main__':
     com.prepare()
     with suppress(KeyboardInterrupt):
-        with RfDevice() as rf_device:
-            rf_device.listen()
+        power_listener = PowerListener()
+        power_listener.listen()
     GPIO.setmode(GPIO.BCM)
-    GPIO.cleanup(rf_device.power_in_gpio)
-    print('Receiver finished')
+    GPIO.cleanup(power_listener.power_in_gpio)
+    print('Sender finished')

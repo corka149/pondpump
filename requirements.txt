@@ -1,2 +1,2 @@
-rpi-rf
 RPi.GPIO
+requests
